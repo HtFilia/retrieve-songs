@@ -1,0 +1,130 @@
+/* Button Styles */
+.custom-button {
+    color: #ffffff; /* White text */
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-right: 10px;
+    background-color: #272727; /* Dark gray background */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); /* Subtle shadow */
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.custom-button:hover {
+    background-color: #3e3e3e; /* Slightly lighter gray on hover */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.7); /* Stronger shadow on hover */
+}
+
+.custom-button:active {
+    background-color: #505050; /* Slightly darker gray on click */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.9); /* Deeper shadow on active */
+}
+
+/* Toggle Switch Styles */
+.toggle-container {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.toggle-label {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+.toggle-input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #505050; /* Dark gray background */
+    transition: 0.4s;
+    border-radius: 20px;
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #ffffff; /* White toggle */
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+.toggle-input:checked + .toggle-slider {
+    background-color: #ff4d4d; /* YouTube red for active state */
+}
+
+.toggle-input:checked + .toggle-slider:before {
+    transform: translateX(14px);
+}
+
+.toggle-text {
+    font-size: 14px;
+    color: #ffffff; /* White text */
+}
+
+/* Animation Styles */
+.success-animation,
+.failure-animation {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px;
+    font-size: 18px;
+    color: #ffffff; /* White text */
+    border-radius: 8px;
+    z-index: 10000;
+    animation: fadeOut 3s ease forwards;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.success-animation {
+    background-color: #198754; /* Success green */
+}
+
+.failure-animation {
+    background-color: #dc3545; /* Failure red */
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        display: none;
+    }
+}
+
+/* Container Styles */
+.control-container {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0; /* Remove padding */
+    background-color: transparent; /* Transparent background */
+    border: none; /* No border */
+    box-shadow: none; /* Remove shadow */
+}

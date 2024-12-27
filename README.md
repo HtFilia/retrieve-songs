@@ -10,10 +10,14 @@ The project is separated in 3 folders:
 
 Get your API_KEY and API_SECRET through [https://addons.mozilla.org/](https://addons.mozilla.org/) and replace them in the following commands
 
-> cd download
-> web-ext sign --channel=unlisted --api-key=\$API_KEY --api-secret=\$API_SECRET
+```bash
+cd download
+web-ext sign --channel=unlisted --api-key=$API_KEY --api-secret=$API_SECRET
+```
 
 ## Server usage
 
-> cd server
-> python3 app.py
+```bash
+cd server
+python3 app.py
+```

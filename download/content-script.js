@@ -58,6 +58,50 @@ function createToggleSwitch(onToggle) {
     return toggleContainer;
 }
 
+function svg_icon(is_success) {
+    if (is_success) {
+        return `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M9 16.2l-3.5-3.5-1.4 1.4 4.9 4.9 12-12-1.4-1.4z"/>
+            </svg>`;
+    } else {
+        return `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M18.3 5.71L12 12.01 5.7 5.71 4.29 7.12 10.59 12.42 4.29 18.71 5.7 20.13 12 13.83 18.3 20.13 19.71 18.71 13.41 12.42 19.71 7.12z"/>
+            </svg>`;
+    }
+}
+
+function showNotification(is_success) {
+    const existingNotification = document.querySelector(".notification");
+    if (existingNotification) {
+        existingNotification.remove(); // Remove old notification if present
+    }
+
+    // Create notification container
+    const notification = document.createElement("div");
+    notification.className = `notification ${is_success ? "success" : "failure"}`;
+
+    // Add an icon
+    const icon = document.createElement("span");
+    icon.className = "notification-icon";
+    icon.innerHTML = svg_icon(is_success);
+    notification.appendChild(icon);
+
+    // Add message text
+    const text = document.createElement("span");
+    text.textContent = is_success ? "Done!" : "Failed.";
+    notification.appendChild(text);
+
+    // Add notification to the body
+    document.body.appendChild(notification);
+
+    // Remove notification after the animation
+    setTimeout(() => {
+        notification.remove();
+    }, 3000); // Match the duration of the CSS animation
+}
+
 function showAnimation(is_success) {
     const animation = document.createElement("div");
     animation.className = is_success ? "success-animation" : "failure-animation";
@@ -77,13 +121,13 @@ function sendPostRequest(url, videoUrl) {
     })
     .then((response) => {
         if (response.ok) {
-            showAnimation(true);
+            showNotification(true);
         } else {
-            showAnimation(false);
+            showNotification(false);
         }
     })
     .catch(() => {
-        showAnimation(false);
+        showNotification(false);
     });
 }
 

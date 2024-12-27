@@ -80,40 +80,56 @@
     color: #ffffff; /* White text */
 }
 
-/* Animation Styles */
-.success-animation,
-.failure-animation {
+.notification {
     position: fixed;
-    top: 20%;
+    top: 20px; /* Appears at the top of the screen */
     left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 20px;
-    font-size: 18px;
-    color: #ffffff; /* White text */
+    transform: translateX(-50%);
+    z-index: 9999;
+    padding: 15px 25px;
     border-radius: 8px;
-    z-index: 10000;
-    animation: fadeOut 3s ease forwards;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #d1d1d1; /* Soft light gray for text */
+    opacity: 0; /* Start hidden */
+    animation: fadeInOut 3s forwards;
 }
 
-.success-animation {
-    background-color: #198754; /* Success green */
+.notification.success {
+    background: linear-gradient(90deg, #2a4d45, #356e5e); /* Dark teal gradient */
+    box-shadow: 0 0 10px 2px rgba(53, 110, 94, 0.3); /* Subtle teal glow */
 }
 
-.failure-animation {
-    background-color: #dc3545; /* Failure red */
+.notification.failure {
+    background: linear-gradient(90deg, #4a2c2c, #5d3939); /* Deep burgundy gradient */
+    box-shadow: 0 0 10px 2px rgba(93, 57, 57, 0.3); /* Subtle red glow */
 }
 
-@keyframes fadeOut {
+.notification-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: #d1d1d1; /* Icon color matches text */
+}
+
+@keyframes fadeInOut {
     0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    10% {
         opacity: 1;
+        transform: translateX(-50%) translateY(0);
     }
     90% {
         opacity: 1;
+        transform: translateX(-50%) translateY(0);
     }
     100% {
         opacity: 0;
-        display: none;
+        transform: translateX(-50%) translateY(-20px);
     }
 }
 

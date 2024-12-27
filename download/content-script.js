@@ -82,8 +82,8 @@ function addControls() {
       "Audio",
       () => {
           const endpoint = useDistantServer
-              ? "https://distant-server:12498/audio"
-              : "https://localhost:12498/audio";
+              ? "http://distant-server:12498/audio"
+              : "http://localhost:12498/audio";
           sendPostRequest(
               endpoint,
               youtubeUrl
@@ -95,8 +95,8 @@ function addControls() {
       "Video",
       () => {
           const endpoint = useDistantServer
-              ? "https://distant-server:12498/video"
-              : "https://localhost:12498/video";
+              ? "http://distant-server:12498/video"
+              : "http://localhost:12498/video";
           sendPostRequest(
               endpoint,
               youtubeUrl

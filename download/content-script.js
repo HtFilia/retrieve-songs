@@ -183,6 +183,12 @@ function addControls() {
     observer.disconnect();
 }
 
+function handleUrlChange() {
+    const existingControls = document.getElementById("send-url-buttons");
+    if (existingControls) existingControls.remove();
+    addControls();
+}
+
 function observeAboveTheFold() {
     const observer = new MutationObserver((_, obs) => {
         const aboveTheFoldContainer = document.getElementById("above-the-fold");

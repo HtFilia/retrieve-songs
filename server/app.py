@@ -20,7 +20,8 @@ def audio():
         ys = yt.streams.get_audio_only()
         executor.submit(_download_stream, ys, True)
         return Response()
-    except:
+    except Exception as e:
+        print(e)
         return Response(status=400)
 
 @app.route("/video", methods=["POST"])
@@ -45,7 +46,7 @@ def _from_youtube(request) -> YouTube:
     video_url = data.get("url")
     if not video_url:
         raise Exception()
-    return YouTube(video_url)
+    return YouTube(video_url, "WEB")
 
 if __name__ == "__main__":
     app.run(debug=True, port=12498)

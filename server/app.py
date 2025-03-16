@@ -1,8 +1,8 @@
 from pathlib import Path
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 from flask_cors import CORS
-from pytubefix import YouTube
-from concurrent.futures import ThreadPoolExecutor
+from manager import JobManager
+from helper import UrlHelper
 
 app = Flask("redirect-server")
 CORS(
@@ -11,42 +11,31 @@ CORS(
         r"/*": {"origins": "https://www.youtube.com",},
     }
 )
-executor = ThreadPoolExecutor()
+jobManager = JobManager()
+
+@app.route("/status", methods=["GET"])
+def status():
+    try:
+        jobId = request.args.get("jobId")
+        return jsonify(JobManager.get_job_status(jobId))
+    except:
+        return Response(status=404)
 
 @app.route("/audio", methods=["POST"])
 def audio():
     try:
-        yt = _from_youtube(request)
-        ys = yt.streams.get_audio_only()
-        executor.submit(_download_stream, ys, True)
-        return Response()
-    except Exception as e:
-        print(e)
+        videoId = JobManager.create_job(request, True)
+        return jsonify({"jobId": videoId, "status": "IN_PROGRESS"})
+    except:
         return Response(status=400)
 
 @app.route("/video", methods=["POST"])
 def video():
     try:
-        yt = _from_youtube(request)
-        ys = yt.streams.get_highest_resolution()
-        executor.submit(_download_stream, ys, False)
-        return Response()
+        videoId = JobManager.create_job(request, False)
+        return jsonify({"jobId": videoId, "status": "IN_PROGRESS"})
     except:
         return Response(status=400)
-
-def _download_stream(stream, is_audio: bool):
-    path = "audio" if is_audio else "movie"
-    Path(path).mkdir(exist_ok=True)
-    stream.download(output_path=path)
-
-def _from_youtube(request) -> YouTube:
-    data = request.get_json()
-    if not data:
-        raise Exception()
-    video_url = data.get("url")
-    if not video_url:
-        raise Exception()
-    return YouTube(video_url, "WEB")
 
 if __name__ == "__main__":
     app.run(debug=True, port=12498)

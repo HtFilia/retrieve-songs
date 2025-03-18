@@ -1,4 +1,6 @@
 server/**/*
+!**/Dockerfile
+!**/docker-compose.yml
 **/web-ext-artifacts
 **/.amo-upload-uuid
 **/.env

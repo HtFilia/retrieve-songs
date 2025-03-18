@@ -52,10 +52,11 @@ class JobManager:
 
     def create_job(self, request, only_audio):
         video_id = UrlHelper.fetch_youtube_id(request)
-        yt = YouTube(UrlHelper.youtube_url(video_id), "WEB", 
+        yt = YouTube(UrlHelper.youtube_url(video_id),
+                     "WEB",
                      on_progress_callback=_progress_job,
                      on_complete_callback=_complete_job,
-                     )
+                    )
         job_id = create_job_id(yt.title)
         with self.lock:
             self.jobs[job_id] = JobStatus(job_id)
@@ -103,12 +104,11 @@ class JobManager:
 
     def _cleanup_jobs(self):
         while True:
-            time.sleep(1)  # Run cleanup every minute
+            time.sleep(60)  # Run cleanup every minute
             now = datetime.now()
             with self.lock:
-                print(f"current jobs in memory: {len(self.jobs.items())}")
                 to_delete = [job_id for job_id, job in self.jobs.items() 
-                           if now > job.expires_at]
+                            if now > job.expires_at]
                 for job_id in to_delete:
                     del self.jobs[job_id]
 

@@ -2,7 +2,7 @@ from flask import Flask, request, Response, jsonify
 from flask_cors import CORS
 from manager import Job_Manager
 
-app = Flask("redirect-server")
+app = Flask("youtube-download")
 CORS(
     app=app,
     resources={

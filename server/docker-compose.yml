@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  youtube-download:
+    build: .
+    ports:
+      - "12498:12498"
+    environment:
+      - FLASK_ENV=production
+    volumes:
+      - type: bind
+        source: ./audio
+        target: /app/audio
+      - type: bind
+        source: ./video
+        target: /app/video

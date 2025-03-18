@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "YouTube Stream Redirect",
-  "version": "0.1",
+  "version": "0.2",
   "description": "Create buttons to redirect audio/video stream of youtube videos.",
   "permissions": ["activeTab"],
   "host_permissions": ["*://*/*"],

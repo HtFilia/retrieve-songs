@@ -28,7 +28,7 @@ function createButton(label, onClickHandler) {
     return button;
 }
 
-function createToggleSwitch(onToggle) {
+function createToggleSwitch(onToggle, labelText) { // Modified to accept labelText
     const toggleContainer = document.createElement("div");
     toggleContainer.className = "toggle-container";
 
@@ -43,7 +43,7 @@ function createToggleSwitch(onToggle) {
     toggleSlider.className = "toggle-slider";
 
     const toggleText = document.createElement("span");
-    toggleText.textContent = "Use Distant Server";
+    toggleText.textContent = labelText; // Use parameter
     toggleText.className = "toggle-text";
 
     toggleLabel.appendChild(toggleInput);
@@ -111,13 +111,16 @@ function showAnimation(is_success) {
     setTimeout(() => animation.remove(), 3000);
 }
 
-function sendPostRequest(url, videoUrl) {
+function sendPostRequest(url, videoUrl, localDownload) { // Add parameter
     fetch(url, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ url: videoUrl })
+        body: JSON.stringify({ 
+            url: videoUrl,
+            local_download: localDownload // Include in payload
+        })
     })
     .then((response) => {
         if (response.ok) {
@@ -132,16 +135,23 @@ function sendPostRequest(url, videoUrl) {
 }
 
 function addControls() {
-
     if (document.getElementById("send-url-buttons")) return;
 
     const aboveTheFoldContainer = document.getElementById("above-the-fold");
     if (!aboveTheFoldContainer) return;
 
     let useDistantServer = false;
-    const toggleSwitch = createToggleSwitch((isDistant) => {
-        useDistantServer = isDistant;
-    });
+    let localDownload = false; // New state variable
+
+    // Create toggles
+    const distantToggle = createToggleSwitch(
+        (isDistant) => { useDistantServer = isDistant; },
+        "Use Distant Server"
+    );
+    const localToggle = createToggleSwitch(
+        (isLocal) => { localDownload = isLocal; },
+        "Download Locally"
+    );
 
     const audioButton = createButton(
         "Audio",
@@ -152,7 +162,8 @@ function addControls() {
                 : "http://localhost:12498/audio";
             sendPostRequest(
                 endpoint,
-                youtubeUrl
+                youtubeUrl,
+                localDownload // Pass the state
             );
         }
     );
@@ -160,14 +171,15 @@ function addControls() {
     const videoButton = createButton(
         "Video",
         () => {
-        const youtubeUrl = window.location.href;
-        const endpoint = useDistantServer
-            ? "http://distant-server:12498/video"
-            : "http://localhost:12498/video";
-        sendPostRequest(
-            endpoint,
-            youtubeUrl
-        );
+            const youtubeUrl = window.location.href;
+            const endpoint = useDistantServer
+                ? "http://distant-server:12498/video"
+                : "http://localhost:12498/video";
+            sendPostRequest(
+                endpoint,
+                youtubeUrl,
+                localDownload // Pass the state
+            );
         }
     );
 
@@ -176,7 +188,8 @@ function addControls() {
     controlContainer.className = "control-container";
     controlContainer.appendChild(audioButton);
     controlContainer.appendChild(videoButton);
-    controlContainer.appendChild(toggleSwitch);
+    controlContainer.appendChild(distantToggle);
+    controlContainer.appendChild(localToggle); // Add new toggle
 
     aboveTheFoldContainer.parentNode.insertBefore(controlContainer, aboveTheFoldContainer);
 
@@ -188,10 +201,6 @@ function observeAboveTheFold() {
         const aboveTheFoldContainer = document.getElementById("above-the-fold");
         if (aboveTheFoldContainer) {
             addControls();
-
-            // Listen for custom "urlchange" events
-            window.addEventListener("urlchange", handleUrlChange);
-
             obs.disconnect(); // Stop observing once the target container is found
         }
     });

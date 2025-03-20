@@ -41,8 +41,14 @@ class JobStatus:
     def _extend_ttl(self):
         self.expires_at = datetime.now() + timedelta(seconds=self.ttl)
 
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
-class JobManager:
+class JobManager(metaclass=Singleton):
     def __init__(self):
         self.jobs = {}
         self.lock = threading.Lock()
@@ -112,7 +118,7 @@ class JobManager:
                 for job_id in to_delete:
                     del self.jobs[job_id]
 
-Job_Manager = JobManager()
+JOB_MANAGER = JobManager()
 
 def _progress_job(stream: Stream, chunk, bytes_remaining):
     video_title = stream.default_filename
@@ -120,9 +126,9 @@ def _progress_job(stream: Stream, chunk, bytes_remaining):
     total_filesize = stream.filesize
     bytes_downloaded = total_filesize - bytes_remaining
     percent_completion = bytes_downloaded / total_filesize
-    Job_Manager.update_job(video_title, percent_completion)
+    JOB_MANAGER.update_job(video_title, percent_completion)
 
 def _complete_job(stream: Stream, file_path):
     video_title = stream.default_filename
     print(f"completed download for {video_title}")
-    Job_Manager.finish_job(video_title, file_path)
+    JOB_MANAGER.finish_job(video_title, file_path)

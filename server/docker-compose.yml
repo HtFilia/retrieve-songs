@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   youtube-download:
     build: .
@@ -14,4 +12,7 @@ services:
       - type: bind
         source: ./video
         target: /app/video
+      - type: bind
+        source: ./tmp
+        target: /app/tmp
     restart: always

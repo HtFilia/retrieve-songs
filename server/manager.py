@@ -1,3 +1,5 @@
+import os
+import shutil
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 import threading
@@ -14,9 +16,10 @@ def create_job_id(video_title: str):
     return base64.urlsafe_b64encode(digest).decode().rstrip('=')
 
 class JobStatus:
-    def __init__(self, job_id, ttl=DEFAULT_TTL):
+    def __init__(self, job_id, only_audio, ttl=DEFAULT_TTL):
         self.status = "IN_PROGRESS"
         self.job_id = job_id
+        self.target_dir = "audio" if only_audio else "video"
         self.expires_at = datetime.now() + timedelta(seconds=ttl)
         self.ttl = ttl
         self.percent_completion = 0.0
@@ -41,15 +44,18 @@ class JobStatus:
     def _extend_ttl(self):
         self.expires_at = datetime.now() + timedelta(seconds=self.ttl)
 
-class Singleton(type):
+class JobManagerMeta(type):
     _instances = {}
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instances[cls] = super(JobManagerMeta, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
-class JobManager(metaclass=Singleton):
+class JobManager(metaclass=JobManagerMeta):
     def __init__(self):
+        os.makedirs('audio', exist_ok=True)
+        os.makedirs('video', exist_ok=True)
+        os.makedirs('tmp', exist_ok=True)
         self.jobs = {}
         self.lock = threading.Lock()
         self.executor = ThreadPoolExecutor(max_workers=4)
@@ -59,15 +65,15 @@ class JobManager(metaclass=Singleton):
     def create_job(self, request, only_audio):
         video_id = UrlHelper.fetch_youtube_id(request)
         yt = YouTube(UrlHelper.youtube_url(video_id),
-                     "WEB",
+                     client="WEB",
                      on_progress_callback=_progress_job,
                      on_complete_callback=_complete_job,
                     )
         job_id = create_job_id(yt.title)
         with self.lock:
-            self.jobs[job_id] = JobStatus(job_id)
+            self.jobs[job_id] = JobStatus(job_id, only_audio)
         self.executor.submit(self._process_job, job_id, yt, only_audio)
-        return video_id
+        return job_id
 
     def get_job_status(self, job_id):
         with self.lock:
@@ -81,7 +87,6 @@ class JobManager(metaclass=Singleton):
     
     def update_job(self, video_title: str, percent_completion: float):
         job_id = create_job_id(video_title)
-        print(f"{video_title} complete at {percent_completion}")
         with self.lock:
             if job_id in self.jobs:
                 self.jobs[job_id].update(percent_completion)
@@ -89,19 +94,25 @@ class JobManager(metaclass=Singleton):
     def finish_job(self, video_title: str, file_path: str):
         job_id = create_job_id(video_title)
         with self.lock:
-            if job_id in self.jobs:
-                self.jobs[job_id].finish(file_path)
+            job = self.jobs.get(job_id)
+            if job:
+                filename = os.path.basename(file_path)
+                new_path = os.path.join(job.target_dir, filename)
+                try:
+                    shutil.move(file_path, new_path)
+                except Exception as e:
+                    job.error(str(e))
+                    return
+                job.finish(new_path)
                 del self.jobs[job_id]
-        print(f"exposing file to url: {file_path}")
 
     def _process_job(self, job_id: str, yt: YouTube, only_audio: bool):
         try:
-            path = "audio" if only_audio else "video"
             if only_audio:
                 ys = yt.streams.get_audio_only()
             else:
                 ys = yt.streams.get_highest_resolution()
-            ys.download(output_path=path)
+            ys.download(output_path="tmp")
 
         except Exception as e:
             with self.lock:
@@ -110,7 +121,7 @@ class JobManager(metaclass=Singleton):
 
     def _cleanup_jobs(self):
         while True:
-            time.sleep(60)  # Run cleanup every minute
+            time.sleep(60)
             now = datetime.now()
             with self.lock:
                 to_delete = [job_id for job_id, job in self.jobs.items() 
@@ -122,13 +133,11 @@ JOB_MANAGER = JobManager()
 
 def _progress_job(stream: Stream, chunk, bytes_remaining):
     video_title = stream.default_filename
-    print(f"progress for {video_title}")
     total_filesize = stream.filesize
     bytes_downloaded = total_filesize - bytes_remaining
     percent_completion = bytes_downloaded / total_filesize
     JOB_MANAGER.update_job(video_title, percent_completion)
 
 def _complete_job(stream: Stream, file_path):
-    video_title = stream.default_filename
-    print(f"completed download for {video_title}")
+    video_title = stream.default_filename[:-4]
     JOB_MANAGER.finish_job(video_title, file_path)

@@ -4,3 +4,4 @@ server/**/*
 **/web-ext-artifacts
 **/.amo-upload-uuid
 **/.env
+**/*.xpi

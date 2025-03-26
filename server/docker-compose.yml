@@ -1,5 +1,6 @@
 services:
   youtube-download:
+    container_name: youtube-download
     build: .
     ports:
       - "12498:12498"
@@ -15,4 +16,15 @@ services:
       - type: bind
         source: ./tmp
         target: /app/tmp
-    restart: always
+    restart: unless-stopped
+    networks:
+      - traefik_network
+    labels:
+      traefik.enable: false
+      glance.name: Youtube-Download
+      glance.url: https://youtube.com
+      glance.hide: false
+
+networks:
+  traefik_network:
+    external: true
